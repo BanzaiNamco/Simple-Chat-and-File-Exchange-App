@@ -12,6 +12,8 @@ public class Client {
     protected static DataOutputStream dosWriter;
     protected static DataInputStream disReader;
     protected static Socket endSocket;
+    protected static Object monitor = new Object();
+    protected static boolean connectionAlive = false;  
     
     //Constants
     protected final static String[] commands = { "/join <server ip> <port>", "/exit" };

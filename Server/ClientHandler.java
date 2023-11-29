@@ -36,7 +36,7 @@ public class ClientHandler extends Thread {
 
                 switch (cmdArr[0]) {
                     case "/ping":
-                        dosWriter.writeUTF("/pong");
+                        dosWriter.writeUTF("PING | MESSAGE | pong");
                         break;
                     case "/leave":
                         exit = true;

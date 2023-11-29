@@ -65,7 +65,6 @@ public class CommandThread implements Runnable {
                 } else {
                     System.out.println("Error: Command parameters do not match or is not allowed.");
                 }
-                // e.printStackTrace();
             }
         }
 
@@ -247,26 +246,11 @@ public class CommandThread implements Runnable {
     }
 
     private static void join(String[] args) {
-        // Check if there is an existing connection
-        if (Client.endSocket != null && !Client.endSocket.isClosed()) {
-            // Check if connection is still alive
-            if (pingServer())
-                System.out.println("Error: Already connected to a server.");
-            return;
-        }
+        // Set host and port
+        Client.host = args[1];
+        Client.port = Integer.parseInt(args[2]);
 
-        // Check if command parameters are correct
-        if (args.length != 3) {
-            System.out.println("Error: Command parameters do not match or is not allowed.");
-            return;
-        }
-
-        // Actual connection to server happens here
         try {
-            // Get host and port
-            Client.host = args[1];
-            Client.port = Integer.parseInt(args[2]);
-
             // Create new socket
             Client.endSocket = new Socket(Client.host, Client.port);
 
@@ -276,31 +260,11 @@ public class CommandThread implements Runnable {
 
             System.out.println("Connection to the File Exchange Server is successful!");
         } catch (IOException e) {
-            System.out.println("Error: Connection to the Server has failed! Please check IP Address and Port Number.");
-            // Call disconnect to close sockets and streams then reset them back to null
+            System.out.println("Error: Server connection lost.");
             forcedisconnect();
         }
 
         return;
-    }
-
-    private static Boolean pingServer() {
-        // Check if there is an existing connection
-        if (Client.endSocket == null || Client.endSocket.isClosed()) {
-            return false;
-        }
-        try {
-            Client.dosWriter.writeUTF("/ping");
-            String response = Client.disReader.readUTF();
-            if (response.equals("/pong")) {
-                return true;
-            }
-            return false;
-        } catch (IOException e) {
-            System.out.println("Error: Server connection lost.");
-            forcedisconnect();
-            return false;
-        }
     }
 
     private static void disconnect() {

@@ -1,8 +1,9 @@
 package Client;
 
-public enum Type {
+public enum MessageType {
     SUCCESS,
     WHISPER,
     ANNOUNCEMENT,
     ERROR,
+    PING,
 }
