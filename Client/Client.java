@@ -5,20 +5,12 @@ import java.net.*;
 import java.util.*;
 
 public class Client {
-    private static String host; // can be changed
+    private static String host = "127.0.0.1"; // can be changed
     private static int port;
     private static DataOutputStream dosWriter;
     private static DataInputStream disReader;
     private static Socket endSocket;
-    private static String[] commands = {
-            "/join <server ip> <port>",
-            "/exit",
-            "/register <handle>",
-            "/store <filename>",
-            "/dir",
-            "/get <filename>",
-            "/?"
-    };
+    private static String[] commands = { "/join <server ip> <port>", "/exit" };
 
     public static void main(String[] args) {
 
@@ -58,6 +50,8 @@ public class Client {
                     case "/?":
                         printCommands();
                         break;
+                    default:
+                        System.out.println("Error: Unidentified command.");
                 }
             } catch (Exception e) {
                 if (e instanceof SocketException) {
