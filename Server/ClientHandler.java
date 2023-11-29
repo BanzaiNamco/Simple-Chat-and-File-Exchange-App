@@ -11,8 +11,7 @@ public class ClientHandler extends Thread {
     private DataOutputStream dosWriter;
     private DataInputStream disReader;
 
-    private static String[] commands = { "/register <handle>", "/leave", "/dir", "/get <filename>",
-            "/store <filename>", "/?" };
+    private static String[] commands = { "/register <handle>", "/leave", "/dir", "/get <filename>", "/store <filename>", "/userlist", "/msg <handle> <message>", "/?" };
 
     public ClientHandler(Socket client) {
         this.client = client;
@@ -55,6 +54,17 @@ public class ClientHandler extends Thread {
                         if (isRegistered())
                             acceptFile(cmdArr);
                         break;
+                    case "/userlist":
+                        if(isRegistered()) {
+                            sendUserDirectory();
+                        }
+                        break;
+                    case "/msg":
+
+                        break;
+                    case "/announce":
+
+                        break;
                     case "/?":
                         getCommandList();
                         break;
@@ -89,9 +99,9 @@ public class ClientHandler extends Thread {
         }
 
         // Check if handle is already taken
-        synchronized (Server.clients) {
-            for (ClientHandler client : Server.clients) {
-                if (client.handle != null && client.handle.equals(args[1])) {
+        synchronized (Server.userDirectory) {
+            for (String handle : Server.userDirectory.keySet()) {
+                if (handle.equals(args[1])) {
                     dosWriter.writeUTF("Error: Registration failed. Handle or alias already exists.");
                     return;
                 }
@@ -100,6 +110,10 @@ public class ClientHandler extends Thread {
 
         // Register client
         handle = args[1];
+        synchronized (Server.userDirectory) {
+            Server.userDirectory.put(handle, this);
+        }
+        
         dosWriter.writeUTF("Server: Welcome " + handle + "!");
     }
 
@@ -251,8 +265,32 @@ public class ClientHandler extends Thread {
             synchronized (Server.clients) {
                 Server.clients.remove(this);
             }
+
+            //Remove client mapping 
+            synchronized (Server.userDirectory) {
+                Server.userDirectory.remove(this.handle);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void sendUserDirectory() throws IOException {
+        String msg = "Active Users:\n";
+        
+        for(String handle: Server.userDirectory.keySet()) {
+            msg += handle + "\n";
+        }
+
+        //Send response
+        dosWriter.writeUTF(msg);
+    }
+
+    public DataInputStream getInputStream() {
+        return this.disReader;
+    }
+
+    public DataOutputStream getOutputStream() {
+        return this.dosWriter;
     }
 }

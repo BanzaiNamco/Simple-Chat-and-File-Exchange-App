@@ -47,6 +47,9 @@ public class Client {
                     case "/store":
                         sendFile(cmdArr);
                         break;
+                    case "/userlist":
+                        sendCommand(cmd);
+                        break;
                     case "/?":
                         printCommands();
                         break;

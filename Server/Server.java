@@ -1,13 +1,12 @@
 import java.net.*;
 import java.util.*;
-import java.util.List;
 import java.io.*;
 
 public class Server {
-
     private static final int PORT = 12345;
     protected static List<ClientHandler> clients = Collections.synchronizedList(new ArrayList<ClientHandler>());
     private static ServerSocket server;
+    protected static Map<String, ClientHandler> userDirectory = Collections.synchronizedMap(new HashMap<String, ClientHandler>());
 
     public static void main(String[] args) {
         try {
