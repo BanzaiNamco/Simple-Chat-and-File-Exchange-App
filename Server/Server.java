@@ -11,7 +11,7 @@ public class Server {
 
     public static void main(String[] args) {
         try {
-            // Create new ServerSocket on port 1234
+            // Create new ServerSocket on the specified port
             server = new ServerSocket(PORT);
 
             System.out.println("Server started on port " + PORT);
