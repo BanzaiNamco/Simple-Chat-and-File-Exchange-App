@@ -10,7 +10,15 @@ public class Client {
     private static DataOutputStream dosWriter;
     private static DataInputStream disReader;
     private static Socket endSocket;
-    private static String[] commands = {"/join <server ip> <port>", "/exit"};
+    private static String[] commands = {
+            "/join <server ip> <port>",
+            "/exit",
+            "/register <handle>",
+            "/store <filename>",
+            "/dir",
+            "/get <filename>",
+            "/?"
+    };
 
     public static void main(String[] args) {
 
@@ -23,9 +31,8 @@ public class Client {
                 String cmd = sc.nextLine();
                 String[] cmdArr = cmd.split(" ");
 
-
                 pingServer();
-                switch(cmdArr[0]){
+                switch (cmdArr[0]) {
                     case "/join":
                         join(cmdArr);
                         break;
@@ -53,7 +60,7 @@ public class Client {
                         break;
                 }
             } catch (Exception e) {
-                if (e instanceof SocketException){
+                if (e instanceof SocketException) {
                     System.out.println("Error: Connection to server lost.");
                     forcedisconnect();
                 } else {
@@ -66,29 +73,30 @@ public class Client {
         sc.close();
     }
 
-    // Double check if there are other exceptions other than SocketException (server is closed)
-    private static void sendCommand(String cmd) throws IOException{
-        if (endSocket == null || endSocket.isClosed()){
+    // Double check if there are other exceptions other than SocketException (server
+    // is closed)
+    private static void sendCommand(String cmd) throws IOException {
+        if (endSocket == null || endSocket.isClosed()) {
             System.out.println("Error: Not connected to a server.");
             return;
         }
 
         // Send command to server
         dosWriter.writeUTF(cmd);
-        
+
         // Read server response
         System.out.println(disReader.readUTF());
 
         return;
     }
 
-    private static void getFile(String[] cmdArr) throws IOException{
-        if (endSocket == null || endSocket.isClosed()){
+    private static void getFile(String[] cmdArr) throws IOException {
+        if (endSocket == null || endSocket.isClosed()) {
             System.out.println("Error: Not connected to a server.");
             return;
         }
 
-        if (cmdArr.length != 2){
+        if (cmdArr.length != 2) {
             System.out.println("Error: Command parameters do not match or is not allowed.");
             return;
         }
@@ -99,20 +107,20 @@ public class Client {
         // Read server response
         String response = disReader.readUTF();
         System.out.println(response);
-        if (response.equals("Error: File not found in server.")){
+        if (response.equals("Error: File not found in server.")) {
             return;
         }
-
 
         String fileName = cmdArr[1];
 
         // Create new file
         File file = new File(fileName);
-        
+
         String originalFileName = fileName;
-        // If file already exists, append (number) to the end of the file name, where number is the number of files with the same name
+        // If file already exists, append (number) to the end of the file name, where
+        // number is the number of files with the same name
         int i = 0;
-        while(file.exists()){
+        while (file.exists()) {
             i++;
             String[] fileNameArr = fileName.split("\\.");
             String newFileName = fileNameArr[0] + "(" + i + ")." + fileNameArr[1];
@@ -128,7 +136,7 @@ public class Client {
         byte[] buffer = new byte[4096];
         int read = 0;
         long remaining = fileSize;
-        while((read = disReader.read(buffer, 0, (int) Math.min(buffer.length, remaining))) > 0) {
+        while ((read = disReader.read(buffer, 0, (int) Math.min(buffer.length, remaining))) > 0) {
             remaining -= read;
             fos.write(buffer, 0, read);
         }
@@ -143,14 +151,13 @@ public class Client {
         System.out.println(success);
     }
 
-    
-    private static void sendFile(String[] cmdArr) throws IOException{
-        if (endSocket == null || endSocket.isClosed()){
+    private static void sendFile(String[] cmdArr) throws IOException {
+        if (endSocket == null || endSocket.isClosed()) {
             System.out.println("Error: Not connected to a server.");
             return;
         }
 
-        if (cmdArr.length != 2){
+        if (cmdArr.length != 2) {
             System.out.println("Error: Command parameters do not match or is not allowed.");
             return;
         }
@@ -162,7 +169,7 @@ public class Client {
         File file = new File(fileName);
 
         // Check if file exists
-        if(!file.exists() || !file.isFile()){
+        if (!file.exists() || !file.isFile()) {
             // File not found
             System.out.println("Error: File not found.");
             return;
@@ -174,7 +181,7 @@ public class Client {
         // Read server response
         String response = disReader.readUTF();
         System.out.println(response);
-        if (response.equals("Error: File with same name already exists.")){
+        if (response.equals("Error: File with same name already exists.")) {
             return;
         }
 
@@ -184,7 +191,7 @@ public class Client {
         FileInputStream fis = new FileInputStream(file);
         byte[] buffer = new byte[4096];
         int read = 0;
-        while ((read = fis.read(buffer)) > 0){
+        while ((read = fis.read(buffer)) > 0) {
             dosWriter.write(buffer, 0, read);
         }
         fis.close();
@@ -195,13 +202,13 @@ public class Client {
         return;
     }
 
-    private static void printCommands(){
+    private static void printCommands() {
         System.out.println("Commands:");
-        for (String cmd : commands){
+        for (String cmd : commands) {
             System.out.println(cmd);
         }
 
-        if (endSocket != null && !endSocket.isClosed()){
+        if (endSocket != null && !endSocket.isClosed()) {
             try {
                 dosWriter.writeUTF("/?");
                 System.out.println(disReader.readUTF());
@@ -213,21 +220,21 @@ public class Client {
         return;
     }
 
-    private static void join(String[] args){
+    private static void join(String[] args) {
         // Check if there is an existing connection
-        if (endSocket != null && !endSocket.isClosed()){
+        if (endSocket != null && !endSocket.isClosed()) {
             // Check if connection is still alive
-            if(pingServer())
+            if (pingServer())
                 System.out.println("Error: Already connected to a server.");
             return;
-        } 
-        
+        }
+
         // Check if command parameters are correct
-        if (args.length != 3){
+        if (args.length != 3) {
             System.out.println("Error: Command parameters do not match or is not allowed.");
             return;
-        } 
-        
+        }
+
         // Actual connection to server happens here
         try {
             // Get host and port
@@ -247,19 +254,19 @@ public class Client {
             // Call disconnect to close sockets and streams then reset them back to null
             forcedisconnect();
         }
-        
+
         return;
     }
 
-    private static Boolean pingServer(){
+    private static Boolean pingServer() {
         // Check if there is an existing connection
-        if (endSocket == null || endSocket.isClosed()){
+        if (endSocket == null || endSocket.isClosed()) {
             return false;
         }
         try {
             dosWriter.writeUTF("/ping");
             String response = disReader.readUTF();
-            if (response.equals("/pong")){
+            if (response.equals("/pong")) {
                 return true;
             }
             return false;
@@ -270,9 +277,9 @@ public class Client {
         }
     }
 
-    private static void disconnect(){
+    private static void disconnect() {
         // Check if there is an existing connection
-        if (endSocket == null || endSocket.isClosed()){
+        if (endSocket == null || endSocket.isClosed()) {
             System.out.println("Error: Disconnection failed. Please connect to the server first.");
             return;
         }
@@ -285,7 +292,7 @@ public class Client {
 
             if (disReader != null)
                 disReader.close();
-            
+
             if (dosWriter != null)
                 dosWriter.close();
 
@@ -299,7 +306,7 @@ public class Client {
         return;
     }
 
-    private static void forcedisconnect(){
+    private static void forcedisconnect() {
         // Check if there is an existing connection
 
         try {
@@ -313,7 +320,7 @@ public class Client {
 
             if (disReader != null)
                 disReader.close();
-            
+
             if (dosWriter != null)
                 dosWriter.close();
 
@@ -325,7 +332,7 @@ public class Client {
         return;
     }
 
-    private static void resetVariables(){
+    private static void resetVariables() {
         host = null;
         port = -1;
         endSocket = null;
