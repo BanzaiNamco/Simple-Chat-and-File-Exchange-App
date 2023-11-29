@@ -1,5 +1,8 @@
+package Server;
+
 import java.net.*;
 import java.util.*;
+
 import java.io.*;
 
 public class Server {
@@ -18,6 +21,7 @@ public class Server {
             // Forever loop
             while (true) {
                 System.out.println(clients.size() + " clients connected");
+                
                 // Accept new client
                 Socket client = server.accept();
 

@@ -1,3 +1,5 @@
+package Server;
+
 import java.io.*;
 import java.net.*;
 import java.time.LocalDateTime;
@@ -6,7 +8,7 @@ import java.util.ArrayList;
 
 public class ClientHandler extends Thread {
     private Socket client;
-    private String handle;
+    public String handle;
 
     private DataOutputStream dosWriter;
     private DataInputStream disReader;
@@ -60,7 +62,7 @@ public class ClientHandler extends Thread {
                         }
                         break;
                     case "/msg":
-
+                        sendMessage(cmdArr);
                         break;
                     case "/announce":
 
@@ -85,6 +87,41 @@ public class ClientHandler extends Thread {
         terminate();
         System.out.println(Server.clients.size() + " clients connected");
 
+    }
+
+    private void sendMessage(String[] cmdArr) throws IOException {
+        if (cmdArr.length < 3) {
+            dosWriter.writeUTF("Error: Command parameters do not match or is not allowed.");
+            return;
+        }
+        
+        //Stitch the message back together
+        String message = "";
+        for(int i = 2; i < cmdArr.length; i++) {
+            message += cmdArr[i] + " ";
+        }
+
+        //Check if the recipient is active
+        if(!isActive(cmdArr[1])) {
+            dosWriter.writeUTF("Error: User is inactive.");
+            return;
+        }
+
+        //Write message to intended recipient
+        DataOutputStream recipientWriter = Server.userDirectory.get(cmdArr[1]).getOutputStream(); 
+        recipientWriter.writeUTF("(Whisper)" + handle + ": " + message);
+
+        dosWriter.writeUTF("Message Sent");
+    }
+
+    private boolean isActive(String handle) {
+        for(String userName: Server.userDirectory.keySet()) {
+            if(handle.equals(userName)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private void register(String[] args) throws IOException {
