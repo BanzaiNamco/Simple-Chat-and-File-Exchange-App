@@ -242,7 +242,7 @@ public class Client {
             dosWriter = new DataOutputStream(endSocket.getOutputStream());
             disReader = new DataInputStream(endSocket.getInputStream());
 
-            System.out.println("Connected to server " + host + ":" + port);
+            System.out.println("Connection to the File Exchange Server is successful!");
         } catch (IOException e) {
             System.out.println("Error: Connection to the Server has failed! Please check IP Address and Port Number.");
             // Call disconnect to close sockets and streams then reset them back to null
@@ -296,7 +296,7 @@ public class Client {
         // Reset variables
         resetVariables();
 
-        System.out.println("Disconnected from server.");
+        System.out.println("Connection closed. Thank you!");
         return;
     }
 
