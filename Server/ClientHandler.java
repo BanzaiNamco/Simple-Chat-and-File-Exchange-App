@@ -12,7 +12,7 @@ public class ClientHandler extends Thread {
     private DataInputStream disReader;
 
     private static String[] commands = { "/register <handle>", "/leave", "/dir", "/get <filename>",
-            "/store <filename>" };
+            "/store <filename>", "/?" };
 
     public ClientHandler(Socket client) {
         this.client = client;
