@@ -1,3 +1,4 @@
-*
-!*.java
-!*.md
+Client/*
+!Client/*.java
+Server/*
+!Server/*.java
