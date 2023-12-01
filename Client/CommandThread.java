@@ -171,14 +171,16 @@ public class CommandThread implements Runnable {
         Client.port = Integer.parseInt(args[2]);
 
         try {
-            // Create new socket
-            Client.endSocket = new Socket(Client.host, Client.port);
+            synchronized(Client.monitor) {
+                // Create new socket
+                Client.endSocket = new Socket(Client.host, Client.port);
 
-            // Create new DataOutputStream and DataInputStream
-            Client.dosWriter = new DataOutputStream(Client.endSocket.getOutputStream());
-            Client.disReader = new DataInputStream(Client.endSocket.getInputStream());
+                // Create new DataOutputStream and DataInputStream
+                Client.dosWriter = new DataOutputStream(Client.endSocket.getOutputStream());
+                Client.disReader = new DataInputStream(Client.endSocket.getInputStream());
 
-            System.out.println("Connection to the File Exchange Server is successful!");
+                System.out.println("Connection to the File Exchange Server is successful!");
+            }
         } catch (IOException e) {
             System.out.println("Error: Server connection lost.");
             forcedisconnect();

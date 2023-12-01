@@ -13,7 +13,7 @@ public class Client {
     protected static DataInputStream disReader;
     protected static Socket endSocket;
     protected static Object monitor = new Object();
-    protected static boolean connectionAlive = false;  
+    protected static Object monitor2 = new Object();
     
     //Constants
     protected final static String[] commands = { "/join <server ip> <port>", "/exit" };

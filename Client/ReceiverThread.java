@@ -10,9 +10,11 @@ public class ReceiverThread implements Runnable {
     public void run() {
         while(true) {
             try {
-                if(Client.disReader != null) {
-                    String message = Client.disReader.readUTF();
-                    messageHandler(message);
+                synchronized(Client.monitor) {
+                    if(Client.disReader != null) {
+                        String message = Client.disReader.readUTF();
+                        messageHandler(message);
+                    }
                 }
                 
             } catch(Exception e) {
@@ -23,7 +25,7 @@ public class ReceiverThread implements Runnable {
     }
 
     private void messageHandler(String message) {
-        String[] splitMessage = message.split(" | ", 2);
+        String[] splitMessage = message.split("\\ \\|\\ ", 2);
         MessageType messageType;
         String messageString;
 
@@ -36,24 +38,26 @@ public class ReceiverThread implements Runnable {
             messageString = "Error: Invalid message header";
         }
 
-
-        switch(messageType) {
-            case ANNOUNCEMENT:
-                Client.announcements.add(messageString);
-                break;
-            case ERROR:
-                handleResponseError(messageString);
-                break;
-            case SUCCESS:
-                handleResponseSuccess(messageString);
-                break;
-            case WHISPER:
-                Client.chats.add(messageString);
-                break;
-            case PING:
-                handlePingResponse(messageString);
-                break;
+        synchronized (Client.monitor2) {
+            switch(messageType) {
+                case ANNOUNCEMENT:
+                    Client.announcements.add(messageString);
+                    break;
+                case ERROR:
+                    handleResponseError(messageString);
+                    break;
+                case SUCCESS:
+                    handleResponseSuccess(messageString);
+                    break;
+                case WHISPER:
+                    Client.chats.add(messageString);
+                    break;
+                case PING:
+                    handlePingResponse(messageString);
+                    break;
+            }
         }
+        
     }
 
     private boolean handlePingResponse(String messageString) {
