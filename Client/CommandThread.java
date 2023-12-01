@@ -141,6 +141,9 @@ public class CommandThread implements Runnable {
             message += cmdArr[i] + " ";
         }
 
+        //Add to chat log
+        Client.chats.add("You to " + cmdArr[1] + ": " + message);
+
         // Send command to server
         Client.dosWriter.writeUTF(cmdArr[0] + " " + cmdArr[1] + " " + message);
     }
