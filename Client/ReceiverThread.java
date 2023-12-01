@@ -1,9 +1,9 @@
 package Client;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.Socket;
 
 public class ReceiverThread implements Runnable {
     @Override
@@ -16,25 +16,23 @@ public class ReceiverThread implements Runnable {
                 }
                 
             } catch(Exception e) {
+                forcedisconnect();
                 e.printStackTrace();
             }
         }
     }
 
     private void messageHandler(String message) {
-        String[] splitMessage = message.split(" | ", 3);
+        String[] splitMessage = message.split(" | ", 2);
         MessageType messageType;
-        ActionCode actionCode;
         String messageString;
 
         //Get the message type
         try {
             messageType = MessageType.valueOf(splitMessage[0]);
-            actionCode = ActionCode.valueOf(splitMessage[1]);
-            messageString = splitMessage[2];
+            messageString = splitMessage[1];
         } catch(Exception e) {
             messageType = MessageType.ERROR;
-            actionCode = ActionCode.INVALID;
             messageString = "Error: Invalid message header";
         }
 
@@ -47,7 +45,7 @@ public class ReceiverThread implements Runnable {
                 handleResponseError(messageString);
                 break;
             case SUCCESS:
-                handleResponseSuccess(actionCode, messageString);
+                handleResponseSuccess(messageString);
                 break;
             case WHISPER:
                 Client.chats.add(messageString);
@@ -58,33 +56,107 @@ public class ReceiverThread implements Runnable {
         }
     }
 
-    private void handlePingResponse(String messageString) {
-        if(messageString.equals("Available")) {
-            try {
-                Client.dosWriter.writeUTF("Proceed");
-            } catch (IOException e) {
-                System.out.println("Error: Server connection lost.");
-                forcedisconnect();
-            }
-        }
-    }
-
-    private void handleResponseSuccess(ActionCode action, String messageString) {
-        switch (action) {
-            
-        }
-    }
-
-    private void handleResponseError(String messageString) {
-    }
-
-    private static Boolean pingServer(String message) {
+    private boolean handlePingResponse(String messageString) {
         // Check if there is an existing connection
         if (Client.endSocket == null || Client.endSocket.isClosed()) {
             return false;
         }
 
-        return message.equals("pong");
+        return messageString.equals("pong");
+    }
+
+    private void handleResponseSuccess(String messageString) {
+        if(messageString == null || messageString.equals("")) {
+            Client.logs.add("ERROR: The response received from the server could not be identified!");
+            return;
+        }
+
+        Client.logs.add(messageString);
+
+        if(messageString.startsWith("Server: Sending file")) {
+            try {
+                receiveFile();
+            } catch(IOException e) {
+                Client.logs.add("ERROR: Something went wrong when receiving the file.");
+            }
+        } else if(messageString.startsWith("Server: Receiving file")) {
+            try {
+                sendFile();
+            } catch(IOException e) {
+                Client.logs.add("ERROR: Something went wrong when sending the file.");
+            }
+        }
+    }
+
+    private void handleResponseError(String messageString) {
+        if(messageString == null || messageString.equals("")) {
+            Client.logs.add("ERROR: The response received from the server could not be identified!");
+            return;
+        }
+
+        Client.logs.add(messageString);
+    }
+
+    private static void receiveFile() throws IOException {
+        String fileName = Client.disReader.readUTF();
+
+        // Create new file
+        File file = new File(fileName);
+
+        String originalFileName = fileName;
+        // If file already exists, append (number) to the end of the file name, where
+        // number is the number of files with the same name
+        int i = 0;
+        while (file.exists()) {
+            i++;
+            String[] fileNameArr = fileName.split("\\.");
+            String newFileName = fileNameArr[0] + "(" + i + ")." + fileNameArr[1];
+            file = new File(newFileName);
+        }
+
+        FileOutputStream fos = new FileOutputStream(file);
+
+        // Read file size
+        long fileSize = Client.disReader.readLong();
+
+        // Read file
+        byte[] buffer = new byte[4096];
+        int read = 0;
+        long remaining = fileSize;
+        while ((read = Client.disReader.read(buffer, 0, (int) Math.min(buffer.length, remaining))) > 0) {
+            remaining -= read;
+            fos.write(buffer, 0, read);
+        }
+
+        // Close file
+        fos.close();
+
+        // Print success message
+        String success = "File received from Server: " + originalFileName;
+        if (!originalFileName.equals(fileName)) {
+            success += " as " + fileName;
+        }
+        Client.logs.add(success);
+    }
+
+    private static void sendFile() throws IOException {
+        // Get file name
+        String fileName = Client.disReader.readUTF();
+
+        // Get file
+        File file = new File(fileName);
+
+        // Send file to server
+        // Send the file length
+        Client.dosWriter.writeLong(file.length());
+
+        FileInputStream fis = new FileInputStream(file);
+        byte[] buffer = new byte[4096];
+        int read = 0;
+        while ((read = fis.read(buffer)) > 0) {
+            Client.dosWriter.write(buffer, 0, read);
+        }
+        fis.close();
     }
 
     private static void forcedisconnect() {

@@ -1,9 +1,9 @@
 package Client;
 
 public enum MessageType {
-    SUCCESS,
-    WHISPER,
-    ANNOUNCEMENT,
-    ERROR,
-    PING,
+    SUCCESS, //For success in response
+    WHISPER, //For whispers
+    ANNOUNCEMENT, //For announcements
+    ERROR, //For error messages
+    PING, //For pings
 }

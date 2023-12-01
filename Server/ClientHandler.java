@@ -36,7 +36,7 @@ public class ClientHandler extends Thread {
 
                 switch (cmdArr[0]) {
                     case "/ping":
-                        dosWriter.writeUTF("PING | MESSAGE | pong");
+                        dosWriter.writeUTF("PING | pong");
                         break;
                     case "/leave":
                         exit = true;
@@ -71,7 +71,7 @@ public class ClientHandler extends Thread {
                         getCommandList();
                         break;
                     default:
-                        dosWriter.writeUTF("Error: Command not found.");
+                        dosWriter.writeUTF("ERROR | Error: Command not found.");
                         break;
                 }
             } catch (Exception e) {
@@ -91,7 +91,7 @@ public class ClientHandler extends Thread {
 
     private void sendMessage(String[] cmdArr) throws IOException {
         if (cmdArr.length < 3) {
-            dosWriter.writeUTF("Error: Command parameters do not match or is not allowed.");
+            dosWriter.writeUTF("ERROR | Error: Command parameters do not match or is not allowed.");
             return;
         }
         
@@ -103,15 +103,13 @@ public class ClientHandler extends Thread {
 
         //Check if the recipient is active
         if(!isActive(cmdArr[1])) {
-            dosWriter.writeUTF("Error: User is inactive.");
+            dosWriter.writeUTF("ERROR | Error: User is inactive.");
             return;
         }
 
         //Write message to intended recipient
         DataOutputStream recipientWriter = Server.userDirectory.get(cmdArr[1]).getOutputStream(); 
-        recipientWriter.writeUTF("(Whisper)" + handle + ": " + message);
-
-        dosWriter.writeUTF("Message Sent");
+        recipientWriter.writeUTF("WHISPER | (Whisper)" + handle + ": " + message);
     }
 
     private boolean isActive(String handle) {
@@ -126,12 +124,12 @@ public class ClientHandler extends Thread {
 
     private void register(String[] args) throws IOException {
         if (args.length != 2) {
-            dosWriter.writeUTF("Error: Command parameters do not match or is not allowed.");
+            dosWriter.writeUTF("ERROR | Error: Command parameters do not match or is not allowed.");
             return;
         }
 
         if (handle != null) {
-            dosWriter.writeUTF("Error: Already registered.");
+            dosWriter.writeUTF("ERROR | Error: Already registered.");
             return;
         }
 
@@ -139,7 +137,7 @@ public class ClientHandler extends Thread {
         synchronized (Server.userDirectory) {
             for (String handle : Server.userDirectory.keySet()) {
                 if (handle.equals(args[1])) {
-                    dosWriter.writeUTF("Error: Registration failed. Handle or alias already exists.");
+                    dosWriter.writeUTF("ERROR | Error: Registration failed. Handle or alias already exists.");
                     return;
                 }
             }
@@ -151,13 +149,13 @@ public class ClientHandler extends Thread {
             Server.userDirectory.put(handle, this);
         }
         
-        dosWriter.writeUTF("Server: Welcome " + handle + "!");
+        dosWriter.writeUTF("SUCCESS | Server: Welcome " + handle + "!");
     }
 
     private void getDir(String[] args) throws IOException {
 
         if (args.length != 1) {
-            dosWriter.writeUTF("Error: Command parameters do not match or is not allowed.");
+            dosWriter.writeUTF("ERROR | Error: Command parameters do not match or is not allowed.");
             return;
         }
 
@@ -189,7 +187,7 @@ public class ClientHandler extends Thread {
             }
         }
 
-        dosWriter.writeUTF(msg);
+        dosWriter.writeUTF("SUCCESS | " + msg);
 
         return;
     }
@@ -209,12 +207,14 @@ public class ClientHandler extends Thread {
         // Check if file exists
         if (!file.exists() || !file.isFile()) {
             // File not found
-            dosWriter.writeUTF("Error: File not found in server.");
+            dosWriter.writeUTF("ERROR | Error: File not found in server.");
             return;
         }
 
         // Send file to client
-        dosWriter.writeUTF("Server: Sending file " + fileName + "...");
+        dosWriter.writeUTF("SUCCESS | Server: Sending file " + fileName + "...");
+        // Send metadata of the file
+        dosWriter.writeUTF(fileName);
         dosWriter.writeLong(file.length());
 
         FileInputStream fis = new FileInputStream(file);
@@ -251,7 +251,9 @@ public class ClientHandler extends Thread {
         }
 
         // Download file from client
-        dosWriter.writeUTF("Server: Receiving file " + serverFileName + "...");
+        dosWriter.writeUTF("SUCCESS | Server: Receiving file " + fileName + " as " + serverFileName + "...");
+        //Resend original file name to be sent by the client
+        dosWriter.writeUTF(fileName);
         long fileSize = disReader.readLong();
 
         // Read file
@@ -272,8 +274,7 @@ public class ClientHandler extends Thread {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         LocalDateTime now = LocalDateTime.now();
         String success = handle + " <" + dtf.format(now) + ">: Uploaded " + fileName;
-        System.out.println(success);
-        dosWriter.writeUTF(success);
+        dosWriter.writeUTF("SUCCESS | " + success);
     }
 
     private void getCommandList() throws IOException {
@@ -281,12 +282,12 @@ public class ClientHandler extends Thread {
         for (String cmd : commands) {
             msg += cmd + "\n";
         }
-        dosWriter.writeUTF(msg);
+        dosWriter.writeUTF("SUCCESS | " + msg);
     }
 
     private Boolean isRegistered() throws IOException {
         if (handle == null) {
-            dosWriter.writeUTF("Error: Not registered.");
+            dosWriter.writeUTF("ERROR | Error: Not registered.");
             return false;
         }
         return true;
@@ -320,7 +321,7 @@ public class ClientHandler extends Thread {
         }
 
         //Send response
-        dosWriter.writeUTF(msg);
+        dosWriter.writeUTF("SUCCESS | " + msg);
     }
 
     public DataInputStream getInputStream() {

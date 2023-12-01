@@ -3,8 +3,6 @@ package Client;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
@@ -81,11 +79,6 @@ public class CommandThread implements Runnable {
 
         // Send command to server
         Client.dosWriter.writeUTF(cmd);
-
-        // Read server response
-        //System.out.println(Client.disReader.readUTF());
-
-        return;
     }
 
     private static void getFile(String[] cmdArr) throws IOException {
@@ -101,52 +94,6 @@ public class CommandThread implements Runnable {
 
         // Send command to server
         Client.dosWriter.writeUTF(cmdArr[0] + " " + cmdArr[1]);
-
-        // Read server response
-        String response = Client.disReader.readUTF();
-        System.out.println(response);
-        if (response.equals("Error: File not found in server.")) {
-            return;
-        }
-
-        String fileName = cmdArr[1];
-
-        // Create new file
-        File file = new File(fileName);
-
-        String originalFileName = fileName;
-        // If file already exists, append (number) to the end of the file name, where
-        // number is the number of files with the same name
-        int i = 0;
-        while (file.exists()) {
-            i++;
-            String[] fileNameArr = fileName.split("\\.");
-            String newFileName = fileNameArr[0] + "(" + i + ")." + fileNameArr[1];
-            file = new File(newFileName);
-        }
-
-        FileOutputStream fos = new FileOutputStream(file);
-
-        // Read file size
-        long fileSize = Client.disReader.readLong();
-
-        // Read file
-        byte[] buffer = new byte[4096];
-        int read = 0;
-        long remaining = fileSize;
-        while ((read = Client.disReader.read(buffer, 0, (int) Math.min(buffer.length, remaining))) > 0) {
-            remaining -= read;
-            fos.write(buffer, 0, read);
-        }
-
-        // Close file
-        fos.close();
-
-        // Print success message
-        String success = "File received from Server: " + originalFileName;
-        if (!originalFileName.equals(fileName))
-            success += " as " + fileName;
-        System.out.println(success);
     }
 
     private static void sendFile(String[] cmdArr) throws IOException {
@@ -175,29 +122,6 @@ public class CommandThread implements Runnable {
 
         // Send command to server
         Client.dosWriter.writeUTF(cmdArr[0] + " " + cmdArr[1]);
-
-        // Read server response
-        String response = Client.disReader.readUTF();
-        System.out.println(response);
-        if (response.equals("Error: File with same name already exists.")) {
-            return;
-        }
-
-        // Send file to server
-        Client.dosWriter.writeLong(file.length());
-
-        FileInputStream fis = new FileInputStream(file);
-        byte[] buffer = new byte[4096];
-        int read = 0;
-        while ((read = fis.read(buffer)) > 0) {
-            Client.dosWriter.write(buffer, 0, read);
-        }
-        fis.close();
-
-        // Print success message
-        System.out.println(Client.disReader.readUTF());
-
-        return;
     }
 
     private static void sendMessage(String[] cmdArr) throws IOException {
@@ -219,26 +143,19 @@ public class CommandThread implements Runnable {
 
         // Send command to server
         Client.dosWriter.writeUTF(cmdArr[0] + " " + cmdArr[1] + " " + message);
-
-        // Read server response
-        String response = Client.disReader.readUTF();
-        System.out.println(response);
-
-        return;
     }
 
     private static void printCommands() {
-        System.out.println("Commands:");
+        Client.logs.add("Commands:");
         for (String cmd : Client.commands) {
-            System.out.println(cmd);
+            Client.logs.add(cmd);
         }
 
         if (Client.endSocket != null && !Client.endSocket.isClosed()) {
             try {
                 Client.dosWriter.writeUTF("/?");
-                System.out.println(Client.disReader.readUTF());
             } catch (IOException e) {
-                System.out.println("Error: Server connection lost.");
+                Client.logs.add("Error: Server connection lost.");
                 forcedisconnect();
             }
         }
