@@ -1,5 +1,3 @@
-package Client;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -10,7 +8,7 @@ public class ReceiverThread implements Runnable {
 
     @Override
     public void run() {
-        while(!stop) {
+        while(!this.stop) {
             try {
                 synchronized(Client.monitor3) {
                     if (Client.endSocket != null && !Client.endSocket.isClosed()) {
@@ -20,7 +18,7 @@ public class ReceiverThread implements Runnable {
                                 messageHandler(message);
                             }
                         }
-                    } 
+                    }
                 }
                 
             } catch(Exception e) {

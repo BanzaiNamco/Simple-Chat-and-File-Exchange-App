@@ -1,5 +1,3 @@
-package Client;
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -236,7 +234,9 @@ public class CommandThread implements Runnable {
                     Client.dosWriter.close();
             }
 
-            Client.receiver.stop();
+            synchronized(Client.monitor2) {
+                Client.receiver.stop();
+            }
 
         } catch (Exception e) {
             // Do nothing; There is no point in doing anything here
