@@ -3,7 +3,7 @@ package Client;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.net.Socket;
-import java.util.ArrayList;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Client {
     //Operational Data
@@ -14,6 +14,7 @@ public class Client {
     protected static Socket endSocket;
     protected static Object monitor = new Object();
     protected static Object monitor2 = new Object();
+    protected static Object monitor3 = new Object();
     
     //Constants
     protected final static String[] commands = { "/join <server ip> <port>", "/exit" };
@@ -23,9 +24,9 @@ public class Client {
     protected static ReceiverThread receiver = new ReceiverThread();
 
     //Message Handlers
-    protected static ArrayList<String> announcements = new ArrayList<String>();
-    protected static ArrayList<String> chats = new ArrayList<String>();
-    protected static ArrayList<String> logs = new ArrayList<String>();
+    protected static CopyOnWriteArrayList<String> announcements = new CopyOnWriteArrayList<String>();
+    protected static CopyOnWriteArrayList<String> chats = new CopyOnWriteArrayList<String>();
+    protected static CopyOnWriteArrayList<String> logs = new CopyOnWriteArrayList<String>();
 
     public static void main(String[] args) {
         new Thread(reader).start();

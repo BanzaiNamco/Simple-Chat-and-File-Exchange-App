@@ -6,15 +6,21 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 public class ReceiverThread implements Runnable {
+    private boolean stop = false;
+
     @Override
     public void run() {
-        while(true) {
+        while(!stop) {
             try {
-                synchronized(Client.monitor) {
-                    if(Client.disReader != null) {
-                        String message = Client.disReader.readUTF();
-                        messageHandler(message);
-                    }
+                synchronized(Client.monitor3) {
+                    if (Client.endSocket != null && !Client.endSocket.isClosed()) {
+                        synchronized(Client.monitor) {
+                            if(Client.disReader != null && Client.disReader.available() > 0) {
+                                String message = Client.disReader.readUTF();
+                                messageHandler(message);
+                            }
+                        }
+                    } 
                 }
                 
             } catch(Exception e) {
@@ -37,27 +43,24 @@ public class ReceiverThread implements Runnable {
             messageType = MessageType.ERROR;
             messageString = "Error: Invalid message header";
         }
-
-        synchronized (Client.monitor2) {
-            switch(messageType) {
-                case ANNOUNCEMENT:
-                    Client.announcements.add(messageString);
-                    break;
-                case ERROR:
-                    handleResponseError(messageString);
-                    break;
-                case SUCCESS:
-                    handleResponseSuccess(messageString);
-                    break;
-                case WHISPER:
-                    Client.chats.add(messageString);
-                    break;
-                case PING:
-                    handlePingResponse(messageString);
-                    break;
-            }
-        }
         
+        switch(messageType) {
+            case ANNOUNCEMENT:
+                Client.announcements.add(messageString);
+                break;
+            case ERROR:
+                handleResponseError(messageString);
+                break;
+            case SUCCESS:
+                handleResponseSuccess(messageString);
+                break;
+            case WHISPER:
+                Client.chats.add(messageString);
+                break;
+            case PING:
+                handlePingResponse(messageString);
+                break;
+        }  
     }
 
     private boolean handlePingResponse(String messageString) {
@@ -193,5 +196,9 @@ public class ReceiverThread implements Runnable {
         Client.dosWriter = null;
         Client.disReader = null;
         return;
+    }
+
+    public void stop() {
+        this.stop = true;
     }
 }

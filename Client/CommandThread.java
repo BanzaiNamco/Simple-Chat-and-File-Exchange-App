@@ -56,6 +56,25 @@ public class CommandThread implements Runnable {
                         System.out.println("Error: Unidentified command.");
                 }
 
+                System.out.println("LOGS");
+                System.out.println("----------------------");
+                System.out.println(Client.logs);
+                System.out.println("----------------------");
+
+                System.out.println("CHATS");
+                System.out.println("----------------------");
+                for(String text: Client.chats) {
+                    System.out.println(text);
+                }
+                System.out.println("----------------------");
+
+                System.out.println("ANNOUNCEMENTS");
+                System.out.println("----------------------");
+                for(String text: Client.announcements) {
+                    System.out.println(text);
+                }
+                System.out.println("----------------------");
+
             } catch (Exception e) {
                 if (e instanceof SocketException) {
                     System.out.println("Error: Connection to server lost.");
@@ -171,6 +190,13 @@ public class CommandThread implements Runnable {
         Client.port = Integer.parseInt(args[2]);
 
         try {
+            if(Client.endSocket != null && !Client.endSocket.isClosed()) {
+                synchronized (Client.logs) {
+                    Client.logs.add("ERROR: Already connected to a server!");
+                }
+                return;
+            }
+
             synchronized(Client.monitor) {
                 // Create new socket
                 Client.endSocket = new Socket(Client.host, Client.port);
@@ -199,14 +225,18 @@ public class CommandThread implements Runnable {
         try {
             Client.dosWriter.writeUTF("/leave");
 
-            // Close sockets and streams
-            Client.endSocket.close();
+            synchronized (Client.monitor3) {
+                // Close sockets and streams
+                Client.endSocket.close();
 
-            if (Client.disReader != null)
-                Client.disReader.close();
+                if (Client.disReader != null)
+                    Client.disReader.close();
 
-            if (Client.dosWriter != null)
-                Client.dosWriter.close();
+                if (Client.dosWriter != null)
+                    Client.dosWriter.close();
+            }
+
+            Client.receiver.stop();
 
         } catch (Exception e) {
             // Do nothing; There is no point in doing anything here
@@ -235,6 +265,8 @@ public class CommandThread implements Runnable {
 
             if (Client.dosWriter != null)
                 Client.dosWriter.close();
+
+            Client.receiver.stop();
 
         } catch (Exception e) {
             // Do nothing; There is no point in doing anything here
