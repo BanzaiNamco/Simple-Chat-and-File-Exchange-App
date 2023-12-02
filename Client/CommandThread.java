@@ -47,6 +47,8 @@ public class CommandThread implements Runnable {
                     case "/msg":
                         sendMessage(cmdArr);
                         break;
+                    case "/all":
+                        sendAnnouncement(cmdArr);
                     case "/?":
                         printCommands();
                         break;
@@ -163,6 +165,30 @@ public class CommandThread implements Runnable {
 
         // Send command to server
         Client.dosWriter.writeUTF(cmdArr[0] + " " + cmdArr[1] + " " + message);
+    }
+
+    private static void sendAnnouncement(String[] cmdArr) throws IOException {
+        if (Client.endSocket == null || Client.endSocket.isClosed()) {
+            System.out.println("Error: Not connected to a server.");
+            return;
+        }
+
+        if (cmdArr.length < 2) {
+            System.out.println("Error: Command parameters do not match or is not allowed.");
+            return;
+        }
+
+        //Stitch the message back together
+        String message = "";
+        for(int i = 1; i < cmdArr.length; i++) {
+            message += cmdArr[i] + " ";
+        }
+
+        //Add to chat log
+        Client.chats.add("You to Everyone: " + message);
+
+        // Send command to server
+        Client.dosWriter.writeUTF(cmdArr[0] + " " + message);
     }
 
     private static void printCommands() {

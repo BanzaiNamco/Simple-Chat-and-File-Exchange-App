@@ -11,7 +11,7 @@ public class ClientHandler extends Thread {
     private DataOutputStream dosWriter;
     private DataInputStream disReader;
 
-    private static String[] commands = { "/register <handle>", "/leave", "/dir", "/get <filename>", "/store <filename>", "/userlist", "/msg <handle> <message>", "/?" };
+    private static String[] commands = { "/register <handle>", "/leave", "/dir", "/get <filename>", "/store <filename>", "/userlist", "/msg <handle> <message>", "/all <message>", "/?" };
 
     public ClientHandler(Socket client) {
         this.client = client;
@@ -62,8 +62,8 @@ public class ClientHandler extends Thread {
                     case "/msg":
                         sendMessage(cmdArr);
                         break;
-                    case "/announce":
-
+                    case "/all":
+                        sendAnnouncement(cmdArr);
                         break;
                     case "/?":
                         getCommandList();
@@ -105,9 +105,37 @@ public class ClientHandler extends Thread {
             return;
         }
 
+        //Check if the recipient is self
+        if(cmdArr[1].equals(this.handle)) {
+            dosWriter.writeUTF("ERROR | Error: Can't send message to self.");
+            return;
+        }
+
         //Write message to intended recipient
         DataOutputStream recipientWriter = Server.userDirectory.get(cmdArr[1]).getOutputStream(); 
-        recipientWriter.writeUTF("WHISPER | (Whisper)" + handle + ": " + message);
+        recipientWriter.writeUTF("WHISPER | (Whisper) " + handle + ": " + message);
+    }
+
+    private void sendAnnouncement(String[] cmdArr) throws IOException {
+        if (cmdArr.length < 2) {
+            dosWriter.writeUTF("ERROR | Error: Command parameters do not match or is not allowed.");
+            return;
+        }
+        
+        //Stitch the message back together
+        String message = "";
+        for(int i = 1; i < cmdArr.length; i++) {
+            message += cmdArr[i] + " ";
+        }
+
+        //Write message to all users
+        synchronized (Server.userDirectory) {
+            for(String handles: Server.userDirectory.keySet()) {
+                if(!handles.equals(this.handle)) {
+                    Server.userDirectory.get(handles).getOutputStream().writeUTF("ANNOUNCEMENT | <Announcement>" + handle + ": " + message); 
+                }
+            }
+        }
     }
 
     private boolean isActive(String handle) {
