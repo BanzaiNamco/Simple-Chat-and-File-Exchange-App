@@ -30,4 +30,16 @@ public class Client {
         new Thread(reader).start();
         new Thread(receiver).start();
     }
+
+    public static int getAnnouncementLength() {
+        return announcements.size();
+    }
+
+    public static int getChatLength() {
+        return chats.size();
+    }
+
+    public static int getLogLength() {
+        return logs.size();
+    }
 }
