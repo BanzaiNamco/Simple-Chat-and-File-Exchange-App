@@ -159,14 +159,17 @@ public class View extends JFrame {
     }
 
     public void repaintAnnouncementPanel() {
+        this.announcementlogPanel.revalidate();
         this.announcementlogPanel.repaint();
     }
 
     public void repaintChatPanel() {
+        this.chatlogPanel.revalidate();
         this.chatlogPanel.repaint();
     }
 
     public void repaintServerPanel() {
+        this.serverlogPanel.revalidate();
         this.serverlogPanel.repaint();
     }
 }

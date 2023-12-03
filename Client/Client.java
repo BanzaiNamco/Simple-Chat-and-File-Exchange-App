@@ -33,18 +33,21 @@ public class Client implements ActionListener {
     public void updateChatDisplay(String text) {
         this.view.addChatLog(text);
         this.view.repaintChatPanel();
+        this.view.revalidate();
         this.view.repaint();
     }
 
     public void updateAnnouncementDisplay(String text) {
         this.view.addAnnouncementLog(text);
         this.view.repaintAnnouncementPanel();
+        this.view.revalidate();
         this.view.repaint();
     }
 
     public void updateServerDisplay(String text) {
         this.view.addServerLog(text);
         this.view.repaintServerPanel();
+        this.view.revalidate();
         this.view.repaint();
     }
 
