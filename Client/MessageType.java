@@ -1,4 +1,4 @@
-package Model;
+
 public enum MessageType {
     SUCCESS, //For success in response
     WHISPER, //For whispers
