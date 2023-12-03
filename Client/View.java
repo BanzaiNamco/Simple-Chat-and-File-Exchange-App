@@ -129,16 +129,19 @@ public class View extends JFrame {
     public void addChatLog(String message) {
         this.chatMessages.add(new JLabel(message));
         this.chatlogPanel.add(this.chatMessages.get(this.chatMessages.size() - 1));
+        this.repaintChatPanel();
     }
 
     public void addAnnouncementLog(String message) {
         this.announcementMessages.add(new JLabel(message));
         this.announcementlogPanel.add(this.announcementMessages.get(this.announcementMessages.size() - 1));
+        this.repaintAnnouncementPanel();
     }
 
     public void addServerLog(String message) {
         this.logMessages.add(new JLabel(message));
         this.serverlogPanel.add(this.logMessages.get(this.logMessages.size() - 1));
+        this.repaintServerPanel();
     }
 
     public String getInput() {
@@ -158,18 +161,24 @@ public class View extends JFrame {
         this.sendButton.addActionListener(listener);
     }
 
-    public void repaintAnnouncementPanel() {
+    private void repaintAnnouncementPanel() {
         this.announcementlogPanel.revalidate();
         this.announcementlogPanel.repaint();
+        this.revalidate();
+        this.repaint();
     }
 
-    public void repaintChatPanel() {
+    private void repaintChatPanel() {
         this.chatlogPanel.revalidate();
         this.chatlogPanel.repaint();
+        this.revalidate();
+        this.repaint();
     }
 
-    public void repaintServerPanel() {
+    private void repaintServerPanel() {
         this.serverlogPanel.revalidate();
         this.serverlogPanel.repaint();
+        this.revalidate();
+        this.repaint();
     }
 }
