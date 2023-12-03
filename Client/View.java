@@ -102,7 +102,7 @@ public class View extends JFrame {
         this.mainDisplayPanel.setLayout(new GridLayout(1, 2));
 
         //Add the scrollables to the main panel
-        this.mainDisplayPanel.add(this.chatlogScrollable);
+        this.mainDisplayPanel.add(this.messagesPanel);
         this.mainDisplayPanel.add(this.serverlogScrollable);
 
         //Add the main panel to the frame

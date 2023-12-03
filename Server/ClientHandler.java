@@ -132,7 +132,7 @@ public class ClientHandler extends Thread {
         synchronized (Server.userDirectory) {
             for(String handles: Server.userDirectory.keySet()) {
                 if(!handles.equals(this.handle)) {
-                    Server.userDirectory.get(handles).getOutputStream().writeUTF("ANNOUNCEMENT | <Announcement>" + handle + ": " + message); 
+                    Server.userDirectory.get(handles).getOutputStream().writeUTF("ANNOUNCEMENT | <Announcement> " + handle + ": " + message); 
                 }
             }
         }

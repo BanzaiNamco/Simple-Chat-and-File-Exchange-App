@@ -75,6 +75,7 @@ public class Client implements ActionListener {
                     break;
                 case "/all":
                     sendAnnouncement(cmdArr);
+                    break;
                 case "/?":
                     printCommands();
                     break;
