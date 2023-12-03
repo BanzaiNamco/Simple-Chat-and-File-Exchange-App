@@ -1,3 +1,4 @@
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -37,15 +38,15 @@ public class View extends JFrame {
 
     public View() {
         //Setting up the window
-        this.setTitle("My Todo List");
+        this.setTitle("CSNETWK MP");
         this.setLayout(new BorderLayout());
         this.setResizable(false);
         this.setSize(720, 720);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
+        
         //Initialize the view
         this.init();
-
+        
         //Make the window visible
         this.setVisible(true);
     }
@@ -87,6 +88,11 @@ public class View extends JFrame {
         
         //Set layout of messages panel
         this.messagesPanel.setLayout(new GridLayout(2, 1));
+
+        //Set layout of the scrollables
+        this.chatlogPanel.setLayout(new BoxLayout(this.chatlogPanel, BoxLayout.Y_AXIS));
+        this.serverlogPanel.setLayout(new BoxLayout(this.serverlogPanel, BoxLayout.Y_AXIS));
+        this.announcementlogPanel.setLayout(new BoxLayout(this.announcementlogPanel, BoxLayout.Y_AXIS));
 
         //Add to the messages panel
         this.messagesPanel.add(this.announcementlogScrollable);
@@ -135,23 +141,32 @@ public class View extends JFrame {
         this.serverlogPanel.add(this.logMessages.get(this.logMessages.size() - 1));
     }
 
-    public int getAnnouncementLength() {
-        return this.announcementMessages.size();
-    }
-
-    public int getChatLength() {
-        return this.chatMessages.size();
-    }
-
-    public int getLogLength() {
-        return this.logMessages.size();
-    }
-
     public String getInput() {
         return this.commandline.getText();
     }
 
+    public void setJoinInfo(String address, String port) {
+        this.serverAddress.setText("Server Address: " + address);
+        this.serverPort.setText("Port Number: " + port);
+    }
+
+    public void setUsername(String username) {
+        this.username.setText("User: " + username);
+    }
+
     public void setActionListeners(ActionListener listener) {
         this.sendButton.addActionListener(listener);
+    }
+
+    public void repaintAnnouncementPanel() {
+        this.announcementlogPanel.repaint();
+    }
+
+    public void repaintChatPanel() {
+        this.chatlogPanel.repaint();
+    }
+
+    public void repaintServerPanel() {
+        this.serverlogPanel.repaint();
     }
 }

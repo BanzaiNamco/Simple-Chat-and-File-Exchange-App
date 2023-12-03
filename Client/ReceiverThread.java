@@ -1,24 +1,34 @@
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.Socket;
 
 public class ReceiverThread implements Runnable {
     private boolean stop = false;
+    private View view;
+    public DataOutputStream dosWriter;
+    public DataInputStream disReader;
+    public Socket endSocket;
+
+    public ReceiverThread(View view) {
+        this.view = view;
+        this.dosWriter = null; 
+        this.disReader = null;
+        this.endSocket = null;
+    }
 
     @Override
     public void run() {
         while(!this.stop) {
             try {
-                synchronized(Client.monitor3) {
-                    if (Client.endSocket != null && !Client.endSocket.isClosed()) {
-                        synchronized(Client.monitor) {
-                            if(Client.disReader != null && Client.disReader.available() > 0) {
-                                String message = Client.disReader.readUTF();
-                                messageHandler(message);
-                            }
-                        }
+                if(this.endSocket != null && !this.endSocket.isClosed()) {
+                    if(this.disReader != null && this.disReader.available() > 0) {
+                        String message = this.disReader.readUTF();
+                        messageHandler(message);
                     }
                 }
                 
@@ -45,7 +55,7 @@ public class ReceiverThread implements Runnable {
         
         switch(messageType) {
             case ANNOUNCEMENT:
-                Client.announcements.add(messageString);
+                this.view.addAnnouncementLog(messageString);
                 break;
             case ERROR:
                 handleResponseError(messageString);
@@ -54,7 +64,7 @@ public class ReceiverThread implements Runnable {
                 handleResponseSuccess(messageString);
                 break;
             case WHISPER:
-                Client.chats.add(messageString);
+                this.view.addChatLog(messageString);
                 break;
             case PING:
                 handlePingResponse(messageString);
@@ -64,7 +74,7 @@ public class ReceiverThread implements Runnable {
 
     private boolean handlePingResponse(String messageString) {
         // Check if there is an existing connection
-        if (Client.endSocket == null || Client.endSocket.isClosed()) {
+        if (this.endSocket == null || this.endSocket.isClosed()) {
             return false;
         }
 
@@ -73,38 +83,44 @@ public class ReceiverThread implements Runnable {
 
     private void handleResponseSuccess(String messageString) {
         if(messageString == null || messageString.equals("")) {
-            Client.logs.add("ERROR: The response received from the server could not be identified!");
+            this.view.addServerLog("ERROR: The response received from the server could not be identified!");
             return;
         }
 
-        Client.logs.add(messageString);
+        this.view.addServerLog(messageString);
 
         if(messageString.startsWith("Server: Sending file")) {
             try {
                 receiveFile();
             } catch(IOException e) {
-                Client.logs.add("ERROR: Something went wrong when receiving the file.");
+                this.view.addServerLog("ERROR: Something went wrong when receiving the file.");
             }
         } else if(messageString.startsWith("Server: Receiving file")) {
             try {
                 sendFile();
             } catch(IOException e) {
-                Client.logs.add("ERROR: Something went wrong when sending the file.");
+                this.view.addServerLog("ERROR: Something went wrong when sending the file.");
+            }
+        } else if(messageString.startsWith("Server: Welcome")) {
+            try {
+                this.view.setUsername(this.disReader.readUTF());
+            } catch(IOException e) {
+                this.view.addServerLog("ERROR: Something went wrong when registering");
             }
         }
     }
 
     private void handleResponseError(String messageString) {
         if(messageString == null || messageString.equals("")) {
-            Client.logs.add("ERROR: The response received from the server could not be identified!");
+            this.view.addServerLog("ERROR: The response received from the server could not be identified!");
             return;
         }
 
-        Client.logs.add(messageString);
+        this.view.addServerLog(messageString);
     }
 
-    private static void receiveFile() throws IOException {
-        String fileName = Client.disReader.readUTF();
+    private void receiveFile() throws IOException {
+        String fileName = this.disReader.readUTF();
 
         // Create new file
         File file = new File(fileName);
@@ -123,13 +139,13 @@ public class ReceiverThread implements Runnable {
         FileOutputStream fos = new FileOutputStream(file);
 
         // Read file size
-        long fileSize = Client.disReader.readLong();
+        long fileSize = this.disReader.readLong();
 
         // Read file
         byte[] buffer = new byte[4096];
         int read = 0;
         long remaining = fileSize;
-        while ((read = Client.disReader.read(buffer, 0, (int) Math.min(buffer.length, remaining))) > 0) {
+        while ((read = this.disReader.read(buffer, 0, (int) Math.min(buffer.length, remaining))) > 0) {
             remaining -= read;
             fos.write(buffer, 0, read);
         }
@@ -142,43 +158,45 @@ public class ReceiverThread implements Runnable {
         if (!originalFileName.equals(fileName)) {
             success += " as " + fileName;
         }
-        Client.logs.add(success);
+        this.view.addServerLog(success);
     }
 
-    private static void sendFile() throws IOException {
+    private void sendFile() throws IOException {
         // Get file name
-        String fileName = Client.disReader.readUTF();
+        String fileName = this.disReader.readUTF();
 
         // Get file
         File file = new File(fileName);
 
         // Send file to server
         // Send the file length
-        Client.dosWriter.writeLong(file.length());
+        this.dosWriter.writeLong(file.length());
 
         FileInputStream fis = new FileInputStream(file);
         byte[] buffer = new byte[4096];
         int read = 0;
         while ((read = fis.read(buffer)) > 0) {
-            Client.dosWriter.write(buffer, 0, read);
+            this.dosWriter.write(buffer, 0, read);
         }
         fis.close();
     }
 
-    private static void forcedisconnect() {
+    public void forcedisconnect() {
+        this.stop = true;
+
         // Check if there is an existing connection
         try {
             // Close sockets and streams
-            if (Client.endSocket != null && !Client.endSocket.isClosed()) {
+            if (this.endSocket != null && !this.endSocket.isClosed()) {
                 System.out.println("Disconnected from server.");
-                Client.endSocket.close();
+                this.endSocket.close();
             }
 
-            if (Client.disReader != null)
-                Client.disReader.close();
+            if (this.disReader != null)
+                this.disReader.close();
 
-            if (Client.dosWriter != null)
-                Client.dosWriter.close();
+            if (this.dosWriter != null)
+                this.dosWriter.close();
 
         } catch (Exception e) {
             // Do nothing; There is no point in doing anything here
@@ -188,16 +206,22 @@ public class ReceiverThread implements Runnable {
         return;
     }
 
-    private static void resetVariables() {
+    private void resetVariables() {
         Client.host = null;
         Client.port = -1;
-        Client.endSocket = null;
-        Client.dosWriter = null;
-        Client.disReader = null;
+        this.endSocket = null;
+        this.dosWriter = null;
+        this.disReader = null;
         return;
     }
 
     public void stop() {
         this.stop = true;
+    }
+
+    public void connect(DataInputStream disReader, DataOutputStream dosWriter, Socket endSocket) {
+        this.dosWriter = dosWriter; 
+        this.disReader = disReader;
+        this.endSocket = endSocket;
     }
 }

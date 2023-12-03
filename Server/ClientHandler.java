@@ -176,6 +176,8 @@ public class ClientHandler extends Thread {
         }
         
         dosWriter.writeUTF("SUCCESS | Server: Welcome " + handle + "!");
+
+        dosWriter.writeUTF(handle);
     }
 
     private void getDir(String[] args) throws IOException {
