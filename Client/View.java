@@ -8,6 +8,7 @@ import javax.swing.JTextField;
 import javax.swing.border.Border;
 
 import java.awt.BorderLayout;
+import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -50,9 +51,14 @@ public class View extends JFrame {
     //Middle panel and its components
     private JPanel mainDisplayPanel;
     //For default
+    private JPanel hostInput;
+    private JPanel portInput;
+    private JLabel hostLbl;
+    private JLabel portLbl;
     private JTextField host;
-    private JTextField ip;
+    private JTextField port;
     private JPanel middlebuttonPanel;
+    private JButton connectButton;
     //For directory
     private JPanel userDirPanel;
     private JPanel serverDirPanel;
@@ -176,15 +182,12 @@ public class View extends JFrame {
         this.add(this.rightPanel, BorderLayout.EAST);
 
         //Set the default layout of the main display panel
-        this.mainDisplayPanel.setLayout(new GridLayout(3, 1));
-
-        //Add the main panel to the frame
-        this.add(this.mainDisplayPanel, BorderLayout.CENTER);
+        this.setDefaultMid();
 
         //Initialize the bottom panel
         this.bottomPanel = new JPanel();
         this.sendPanel = new JPanel();
-        this.commandline = new JTextField();
+        this.commandline = new JTextField(100);
         this.sendButton = new JButton("Send");
 
         //Set layout of bottomPanel
@@ -197,6 +200,42 @@ public class View extends JFrame {
 
         //Add the bottom panel to the frame
         this.add(this.bottomPanel, BorderLayout.SOUTH);
+    }
+
+    public void setDefaultMid() {
+        //Init main display
+        this.mainDisplayPanel = new JPanel();
+
+        //Init default ui elements
+        this.hostInput = new JPanel();
+        this.portInput = new JPanel();
+        this.hostLbl = new JLabel("Host");
+        this.portLbl = new JLabel("Port");
+        this.host = new JTextField(50);
+        this.port = new JTextField(50);
+        this.middlebuttonPanel = new JPanel();
+        this.connectButton = new JButton("Connect");
+
+        //Add elements
+        this.hostInput.add(this.hostLbl);
+        this.hostInput.add(this.host);
+        this.portInput.add(this.portLbl);
+        this.portInput.add(this.port);
+        this.middlebuttonPanel.add(this.connectButton);
+
+        //Add to centering panel
+        this.mainDisplayPanel.setLayout(new BoxLayout(this.mainDisplayPanel, BoxLayout.Y_AXIS));
+        this.mainDisplayPanel.add(this.hostInput);
+        this.mainDisplayPanel.add(this.portInput);
+        this.mainDisplayPanel.add(this.middlebuttonPanel);
+        this.add(this.mainDisplayPanel, BorderLayout.CENTER);
+
+        this.revalidate();
+        this.repaint();
+    }
+
+    public void setFileMid() {
+
     }
 
     public void addChatLog(String message) {
@@ -215,6 +254,12 @@ public class View extends JFrame {
         this.logMessages.add(new JLabel(message));
         this.serverlogPanel.add(this.logMessages.get(this.logMessages.size() - 1));
         this.repaintServerPanel();
+    }
+
+    public void addCommand(String message) {
+        this.commands.add(new JLabel(message));
+        this.commandsPanel.add(this.commands.get(this.commands.size() - 1));
+        this.repaintCommandPanel();
     }
 
     public String getInput() {
@@ -251,6 +296,13 @@ public class View extends JFrame {
     private void repaintServerPanel() {
         this.serverlogPanel.revalidate();
         this.serverlogPanel.repaint();
+        this.revalidate();
+        this.repaint();
+    }
+
+    private void repaintCommandPanel() {
+        this.commandsPanel.revalidate();
+        this.commandsPanel.repaint();
         this.revalidate();
         this.repaint();
     }
