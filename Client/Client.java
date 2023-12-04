@@ -19,7 +19,7 @@ public class Client implements ActionListener {
     public Socket endSocket;
     
     //Constants
-    private final static String[] commands = { "/join <server ip> <port>", "/exit" };
+    private final static String[] commands = { "/join <server ip> <port>" };
     
     //Threads
     private ReceiverThread receiver;
