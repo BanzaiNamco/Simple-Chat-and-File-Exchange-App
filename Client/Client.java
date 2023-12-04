@@ -15,7 +15,7 @@ public class Client {
     protected static Object monitor3 = new Object();
     
     //Constants
-    protected final static String[] commands = { "/join <server ip> <port>", "/exit" };
+    protected final static String[] commands = { "/join <server ip> <port>"};
     
     //Threads
     protected static CommandThread reader = new CommandThread();
