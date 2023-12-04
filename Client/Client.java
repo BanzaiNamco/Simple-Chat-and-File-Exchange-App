@@ -199,8 +199,9 @@ public class Client implements ActionListener {
 
     private void printCommands() {
         this.updateServerDisplay("Commands:");
+        this.updateServerDisplay("-------------------");
         for (String cmd : Client.commands) {
-            this.updateServerDisplay(cmd);
+            this.updateServerDisplay("    " + cmd);
         }
 
         if (this.endSocket != null && !this.endSocket.isClosed()) {
@@ -211,6 +212,8 @@ public class Client implements ActionListener {
                 this.receiver.forcedisconnect();
                 this.resetVariables();
             }
+        } else {
+            this.updateServerDisplay("-------------------");
         }
         return;
     }

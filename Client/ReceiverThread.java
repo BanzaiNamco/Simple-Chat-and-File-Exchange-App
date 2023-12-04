@@ -69,7 +69,33 @@ public class ReceiverThread implements Runnable {
             case PING:
                 handlePingResponse(messageString);
                 break;
+            case COMMANDS:
+                tokenizedAddition(messageString);
+                this.view.addServerLog("-------------------");
+                break;
+            case DIR:
+                this.view.addServerLog("Server Directory:");
+                this.view.addServerLog("-------------------");
+                tokenizedAddition(messageString);
+                this.view.addServerLog("-------------------");
+                break;
+            case USERS:
+                this.view.addServerLog("Active Users:");
+                this.view.addServerLog("-------------------");
+                tokenizedAddition(messageString);
+                this.view.addServerLog("-------------------");
+                break;
+            default:
+                break;
         }  
+    }
+
+    private void tokenizedAddition(String message) {
+        String[] tokens = message.split("\n");
+
+        for(String token: tokens) {
+            this.view.addServerLog("    " + token);
+        }
     }
 
     private boolean handlePingResponse(String messageString) {

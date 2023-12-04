@@ -195,7 +195,7 @@ public class ClientHandler extends Thread {
         ArrayList<String> fileNames = new ArrayList<>();
 
         // Send list of files to client
-        String msg = "Server directory:\n";
+        String msg = "";
         for (File file : files) {
             // Filter out .java and .class files
             if (file.isFile()) {
@@ -215,7 +215,7 @@ public class ClientHandler extends Thread {
             }
         }
 
-        dosWriter.writeUTF("SUCCESS | " + msg);
+        dosWriter.writeUTF("DIR | " + msg);
 
         return;
     }
@@ -310,7 +310,7 @@ public class ClientHandler extends Thread {
         for (String cmd : commands) {
             msg += cmd + "\n";
         }
-        dosWriter.writeUTF("SUCCESS | " + msg);
+        dosWriter.writeUTF("COMMANDS | " + msg);
     }
 
     private Boolean isRegistered() throws IOException {
@@ -342,14 +342,14 @@ public class ClientHandler extends Thread {
     }
 
     private void sendUserDirectory() throws IOException {
-        String msg = "Active Users:\n";
+        String msg = "";
         
         for(String handle: Server.userDirectory.keySet()) {
             msg += handle + "\n";
         }
 
         //Send response
-        dosWriter.writeUTF("SUCCESS | " + msg);
+        dosWriter.writeUTF("USERS | " + msg);
     }
 
     public DataInputStream getInputStream() {

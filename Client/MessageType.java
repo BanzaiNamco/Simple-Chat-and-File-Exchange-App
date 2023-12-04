@@ -5,4 +5,7 @@ public enum MessageType {
     ANNOUNCEMENT, //For announcements
     ERROR, //For error messages
     PING, //For pings
+    DIR, //For directory request
+    COMMANDS, //For command request
+    USERS, //For userlist
 }
