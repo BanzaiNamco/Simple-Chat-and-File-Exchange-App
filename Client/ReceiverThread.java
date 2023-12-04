@@ -223,5 +223,6 @@ public class ReceiverThread implements Runnable {
         this.dosWriter = dosWriter; 
         this.disReader = disReader;
         this.endSocket = endSocket;
+        this.stop = false;
     }
 }
