@@ -1,6 +1,4 @@
-Client/Model/*
-Client/View/*
-Client/Controller/*
-!Client/**/*.java
+Client/*
+!Client/*.java
 Server/*
 !Server/*.java
