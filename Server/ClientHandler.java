@@ -73,7 +73,7 @@ public class ClientHandler extends Thread {
                         break;
                 }
             } catch (Exception e) {
-                if (e instanceof SocketException) {
+                if (e instanceof IOException) {
                     exit = true;
                 } else {
                     e.printStackTrace();

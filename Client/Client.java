@@ -202,8 +202,7 @@ public class Client implements ActionListener {
                 this.dosWriter.writeUTF("/?");
             } catch (IOException e) {
                 this.updateServerDisplay("Error: Server connection lost.");
-                this.receiver.forcedisconnect();
-                this.resetVariables();
+                this.disconnect();
             }
         } else {
             this.updateServerDisplay("-------------------");
