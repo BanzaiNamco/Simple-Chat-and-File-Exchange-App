@@ -11,6 +11,7 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.util.ArrayList;
 
 public class View extends JFrame {
@@ -67,6 +68,8 @@ public class View extends JFrame {
     private JPanel downloadPanel;
     private JButton downloadButton;
     private JButton uploadButton;
+    private ArrayList<JLabel> userDir;
+    private ArrayList<JLabel> serverDir;
 
     //Bottom panel
     private JPanel bottomPanel;
@@ -235,7 +238,42 @@ public class View extends JFrame {
     }
 
     public void setFileMid() {
+        //Init main display
+        this.selected = null;
+        this.mainDisplayPanel = new JPanel();
+        this.userDirPanel = new JPanel();
+        this.serverDirPanel = new JPanel();
+        this.uploadPanel = new JPanel();
+        this.downloadPanel = new JPanel();   
+        this.downloadButton = new JButton("Download");
+        this.uploadButton = new JButton("Upload");
+        this.userDir = new ArrayList<>();
+        this.serverDir = new ArrayList<>();
 
+        // Get list of files in current directory
+        File dir = new File(".");
+        File[] files = dir.listFiles();
+
+        // Send list of files to client
+        String msg = "Server directory:\n";
+        for (File file : files) {
+            // Filter out .java and .class files
+            if (file.isFile()) {
+                if (!file.getName().endsWith(".java") && !file.getName().endsWith(".class")
+                        && !file.getName().endsWith(".git")) {
+                    this.userDir.add(new JLabel(file.getName()));
+                }
+            }
+        }
+
+        // Handle file listings
+        if (this.userDir.size() == 0) {
+            this.userDir.add(new JLabel("No Files Found"));
+        }
+
+        for(JLabel label: this.userDir) {
+            
+        }
     }
 
     public void addChatLog(String message) {
@@ -264,6 +302,11 @@ public class View extends JFrame {
 
     public String getInput() {
         return this.commandline.getText();
+    }
+
+    public String[] getConnectionInfo() {
+        String[] vals = {this.host.getText(), this.port.getText()};
+        return vals;
     }
 
     public void setJoinInfo(String address, String port) {

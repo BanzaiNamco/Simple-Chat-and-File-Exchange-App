@@ -42,9 +42,27 @@ public class Client implements ActionListener {
         this.view.addServerLog(text);
     }
 
+    public void updateCommandDisplay(String text) {
+        this.view.addCommand(text);
+    }
+
     @Override
     public void actionPerformed(ActionEvent event) {
-        String cmd = this.view.getInput();
+        String cmd;
+
+        if(event.getActionCommand().equals("Connect")) {
+            String[] credentials = this.view.getConnectionInfo();
+            cmd = "/join " + credentials[0] + " " + credentials[1];
+        } else if(event.getActionCommand().equals("Download")) {
+
+        } else if(event.getActionCommand().equals("Upload")) {
+            
+        } else if(event.getActionCommand().equals("Leave")) {
+            cmd = "/leave";
+        } else {
+            cmd = this.view.getInput();
+        }
+
         String[] cmdArr = cmd.split(" ");
 
         try {
@@ -237,6 +255,8 @@ public class Client implements ActionListener {
             this.receiver.connect(disReader, dosWriter, endSocket);
             this.updateServerDisplay("Connection to the File Exchange Server is successful!");
             new Thread(this.receiver).start();
+
+            this.sendCommand("/dir");
 
         } catch (IOException e) {
             this.updateServerDisplay("Error: Server connection lost.");
