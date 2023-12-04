@@ -133,6 +133,21 @@ public class ReceiverThread implements Runnable {
             } catch(IOException e) {
                 this.view.addServerLog("ERROR: Something went wrong when registering");
             }
+        } else if(messageString.startsWith("Whisper sent")) {
+            try {
+                String username = messageString.split(" ")[3];
+                String message = disReader.readUTF();
+                this.view.addChatLog("You to " + username + ": " + message);
+            } catch (IOException e) {
+                this.view.addServerLog("ERROR: Something went wrong");
+            }
+        } else if(messageString.startsWith("Announcement sent")) {
+            try {
+                String message = disReader.readUTF();
+                this.view.addAnnouncementLog("You to Everyone: " + message);
+            } catch (IOException e) {
+                this.view.addServerLog("ERROR: Something went wrong");
+            }
         }
     }
 
@@ -155,7 +170,7 @@ public class ReceiverThread implements Runnable {
         // If file already exists, append (number) to the end of the file name, where
         // number is the number of files with the same name
         int i = 0;
-        while (file.exists()) {
+        while (file.exists() && file.isFile()) {
             i++;
             String[] fileNameArr = fileName.split("\\.");
             String newFileName = fileNameArr[0] + "(" + i + ")." + fileNameArr[1];

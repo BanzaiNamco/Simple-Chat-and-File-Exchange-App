@@ -114,6 +114,9 @@ public class ClientHandler extends Thread {
         //Write message to intended recipient
         DataOutputStream recipientWriter = Server.userDirectory.get(cmdArr[1]).getOutputStream(); 
         recipientWriter.writeUTF("WHISPER | (Whisper) " + handle + ": " + message);
+        
+        dosWriter.writeUTF("SUCCESS | Whisper sent to " + cmdArr[1]);
+        dosWriter.writeUTF(message);
     }
 
     private void sendAnnouncement(String[] cmdArr) throws IOException {
@@ -136,6 +139,9 @@ public class ClientHandler extends Thread {
                 }
             }
         }
+
+        dosWriter.writeUTF("SUCCESS | Announcement sent to all users.");
+        dosWriter.writeUTF(message);
     }
 
     private boolean isActive(String handle) {
@@ -273,8 +279,9 @@ public class ClientHandler extends Thread {
         File file = new File(serverFileName);
         int counter = 1;
         while (file.exists() && file.isFile()) {
-            serverFileName = fileName + "-" + String.valueOf(counter);
-            file = new File(serverFileName);
+            String[] fileNameArr = fileName.split("\\.");
+            String newFileName = fileNameArr[0] + "(" + counter + ")." + fileNameArr[1];
+            file = new File(newFileName);
             counter++;
         }
 

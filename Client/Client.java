@@ -86,8 +86,7 @@ public class Client implements ActionListener {
         } catch (Exception e) {
             if (e instanceof SocketException) {
                 this.updateServerDisplay("Error: Connection to server lost.");
-                this.receiver.forcedisconnect();
-                this.resetVariables();
+                this.disconnect();
             } else {
                 this.updateServerDisplay("Error: Command parameters do not match or is not allowed.");
             }
@@ -166,9 +165,6 @@ public class Client implements ActionListener {
             message += cmdArr[i] + " ";
         }
 
-        //Add to chat log
-        this.updateChatDisplay("You to " + cmdArr[1] + ": " + message);
-
         // Send command to server
         this.dosWriter.writeUTF(cmdArr[0] + " " + cmdArr[1] + " " + message);
     }
@@ -189,9 +185,6 @@ public class Client implements ActionListener {
         for(int i = 1; i < cmdArr.length; i++) {
             message += cmdArr[i] + " ";
         }
-
-        //Add to chat log
-        this.updateChatDisplay("You to Everyone: " + message);
 
         // Send command to server
         this.dosWriter.writeUTF(cmdArr[0] + " " + message);
@@ -242,7 +235,7 @@ public class Client implements ActionListener {
             new Thread(this.receiver).start();
 
         } catch (IOException e) {
-            this.updateServerDisplay("Error: Server connection lost.");
+            this.updateServerDisplay("Error:  Connection to the Server has failed! Please check IP Address and Port Number.");
             this.receiver.forcedisconnect();
             this.resetVariables();
         }
@@ -258,23 +251,30 @@ public class Client implements ActionListener {
         }
 
         try {
-            this.dosWriter.writeUTF("/leave");
-
-            this.receiver.stop();
-            this.receiver.forcedisconnect();
-            this.resetVariables();
-
             this.view.setJoinInfo("Disconnected", "Disconnected");
             this.view.setUsername("Not Registered");
-
+            
+            this.receiver.stop();
+            this.receiver.forcedisconnect();
+            
+            this.dosWriter.writeUTF("/leave");
+            
+            this.dosWriter.close();
+            this.disReader.close();
+            this.endSocket.close();
+            
+            
         } catch (Exception e) {
             // Do nothing; There is no point in doing anything here
         }
-
+        
+        this.resetVariables();
         this.updateServerDisplay("Connection closed. Thank you!");
         return;
     }
     
+
+
     private void resetVariables() {
         this.endSocket = null;
         this.dosWriter = null;
