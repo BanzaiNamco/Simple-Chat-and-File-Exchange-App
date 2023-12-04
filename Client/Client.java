@@ -262,6 +262,7 @@ public class Client implements ActionListener {
             this.resetVariables();
 
             this.view.setJoinInfo("Disconnected", "Disconnected");
+            this.view.setUsername("Not Registered");
 
         } catch (Exception e) {
             // Do nothing; There is no point in doing anything here
